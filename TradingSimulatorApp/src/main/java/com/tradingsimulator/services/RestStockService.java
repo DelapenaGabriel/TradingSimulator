@@ -1,6 +1,7 @@
 package com.tradingsimulator.services;
 
 import com.tradingsimulator.model.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -13,9 +14,11 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class RestStockService implements StockService{
 
-    private final String API_BASE_URL = "https://finnhub.io/api/v1";
+    @Value("${stocks.api.url}")
+    private String API_BASE_URL;
 
-    private final String API_KEY = "cq4se7hr01qhh2h6gk4gcq4se7hr01qhh2h6gk50";
+    @Value("${stocks.api.key}")
+    private String API_KEY;
 
     private RestTemplate restTemplate = new RestTemplate();
 
