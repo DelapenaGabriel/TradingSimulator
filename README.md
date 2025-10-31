@@ -21,6 +21,7 @@ Risk-Free Trading – Practice trading without losing money.
 Clone the repository
 
 git clone [https://github.com/YourUsername/TradingSimulator.git](https://github.com/DelapenaGabriel/TradingSimulator.git)
+
 cd TradingSimulator
 
 
