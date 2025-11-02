@@ -8,7 +8,7 @@ RUN mvn clean install
 #
 # Package stage
 #
-FROM openjdk:17-jdk-alpine
+FROM eclipse-temurin:17-jdk
 COPY --from=build /target/module-02-final-project-1.0.jar demo.jar
 # ENV PORT=8080
 EXPOSE 8080
