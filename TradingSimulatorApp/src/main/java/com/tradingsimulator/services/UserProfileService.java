@@ -1,7 +1,9 @@
 package com.tradingsimulator.services;
 
 import com.tradingsimulator.model.UserProfile;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 
@@ -12,7 +14,7 @@ public interface UserProfileService {
 
     UserProfile update(UserProfile userProfile, Principal principal);
 
-    UserProfile create(UserProfile newUserProfile, Principal principal);
+    UserProfile create(UserProfile newUserProfile, Principal principal, MultipartFile file) throws IOException;
 
     int delete(int id, Principal principal);
 }
