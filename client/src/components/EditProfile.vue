@@ -20,7 +20,7 @@
       </div>
       <div class="name">
         <label for="name">Full Name</label>
-        <input type="text" id="name" v-model="profile.name" required/>
+        <input type="text" id="name" v-model="profile.name" required />
       </div>
       <div class="contact-number">
         <label for="number">Contact Number</label>
@@ -34,12 +34,12 @@
       </div>
       <div class="address">
         <label for="address">Address</label>
-        <input type="text" id="address" v-model="profile.address" required/>
+        <input type="text" id="address" v-model="profile.address" required />
       </div>
       <div class="city-state">
         <div class="city">
           <label for="city">City</label>
-          <input type="text" id="city" v-model="profile.city" required/>
+          <input type="text" id="city" v-model="profile.city" required />
         </div>
         <div class="state">
           <label for="state">State</label>
@@ -117,27 +117,30 @@
         <button class="cancel" @click="triggerCancel">Cancel</button>
         <button class="save" type="submit">Save</button>
       </div>
-      <i class='bx bxs-check-circle' style='color:#32de2d' v-if="isUpdated" > Profile Updated Successfully!</i>
+      <i class="bx bxs-check-circle" style="color: #32de2d" v-if="isUpdated">
+        Profile Updated Successfully!</i
+      >
     </form>
   </div>
 </template>
 
 <script>
 import profileService from "../services/ProfileService";
+import axios from "axios";
 export default {
   data() {
     return {
       profile: {
-        id:"",
-        name:"",
-        phoneNumber:"",
-        address:"",
-        city:"",
-        state:"",
-        zipCode:"",
-        avatarUrl:""
+        id: "",
+        name: "",
+        phoneNumber: "",
+        address: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        avatarUrl: "",
       },
-      isUpdated:false,
+      isUpdated: false,
     };
   },
   created() {
@@ -153,10 +156,10 @@ export default {
             this.profile.name = response.data.name;
             this.profile.phoneNumber = response.data.phoneNumber;
             this.profile.address = response.data.address;
-            this.profile.city =response.data.city;
-            this.profile.state =response.data.state;
-            this.profile.zipCode =response.data.zipCode;
-            this.profile.avatarUrl =response.data.avatarUrl;
+            this.profile.city = response.data.city;
+            this.profile.state = response.data.state;
+            this.profile.zipCode = response.data.zipCode;
+            this.profile.avatarUrl = response.data.avatarUrl;
           }
         })
         .catch((error) => {
@@ -165,42 +168,66 @@ export default {
     },
     imageToURL(event) {
       const file = event.target.files[0];
-
-      if (file) {
-        const imageUrl = URL.createObjectURL(file);
-        this.profile.avatarUrl = imageUrl;
+      if (!file) {
+        console.log("No file selected");
+        return;
       }
+
+      console.log("Uploading file:", file.name);
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "tradesim_images"); // your unsigned preset
+
+      axios
+        .post(
+          "https://api.cloudinary.com/v1_1/dujc4iuu8/image/upload",
+          formData
+        )
+        .then((response) => {
+          console.log("Cloudinary response:", response.data); // debug
+          this.profile.avatarUrl = response.data.secure_url;
+        })
+        .catch((error) => {
+          console.error(
+            "Error uploading image to Cloudinary:",
+            error.response?.data || error
+          );
+        });
     },
     clickFileUpload() {
       this.$refs.fileInput.click();
     },
-    triggerCancel(){
-        this.$router.push({name:"home"});
+    triggerCancel() {
+      this.$router.push({ name: "home" });
     },
-    triggerSave(){
-        const updateProfile = {
-            name:this.profile.name,
-            phoneNumber: this.profile.phoneNumber,
-            address: this.profile.address,
-            city: this.profile.city,
-            state: this.profile.state,
-            zipCode: this.profile.zipCode,
-            avatarUrl:this.profile.avatarUrl
-        }
+    triggerSave() {
+      const updateProfile = {
+        name: this.profile.name,
+        phoneNumber: this.profile.phoneNumber,
+        address: this.profile.address,
+        city: this.profile.city,
+        state: this.profile.state,
+        zipCode: this.profile.zipCode,
+        avatarUrl: this.profile.avatarUrl,
+      };
 
-            profileService.updateProfile(this.profile.id, updateProfile).then((response)=>{
-                    this.isUpdated = true;
-            }).catch(error =>{
-                console.error("Error Occurred updating profile.", error);
-            });
-        },
+      profileService
+        .updateProfile(this.profile.id, updateProfile)
+        .then((response) => {
+          this.isUpdated = true;
+        })
+        .catch((error) => {
+          console.error("Error Occurred updating profile.", error);
+        });
+    },
   },
 };
 </script>
 
 <style scoped>
 .container {
- min-height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -237,8 +264,8 @@ img {
   margin-bottom: 10px;
 }
 
-img:hover{
-    cursor: pointer;
+img:hover {
+  cursor: pointer;
 }
 
 .name,
@@ -298,13 +325,12 @@ label {
   transition: all 0.3 ease;
 }
 
-
 .cancel:active {
-    background-color: #ffffff;
+  background-color: #ffffff;
 }
 
 .save:active {
-    background-color: #0575e6;
+  background-color: #0575e6;
 }
 .save {
   background-color: #0575e6;
@@ -330,7 +356,7 @@ label {
   margin-bottom: 20px;
 }
 
-i{
+i {
   margin-top: 40px;
 }
 
@@ -345,7 +371,6 @@ i{
 }
 
 @media screen and (max-width: 425px) {
-    
   img {
     width: 60px;
     height: 60px;
