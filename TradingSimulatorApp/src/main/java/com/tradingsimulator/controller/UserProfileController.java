@@ -71,10 +71,10 @@ public class UserProfileController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("")
-    public UserProfile add(@Valid @RequestBody UserProfile newUserProfile, Principal principal, @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
+    public UserProfile add(@Valid @RequestBody UserProfile newUserProfile, Principal principal){
         UserProfile userProfile = null;
         try {
-            userProfile = userProfileService.create(newUserProfile, principal, file);
+            userProfile = userProfileService.create(newUserProfile, principal);
         } catch (DaoException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()); //Status Code: 500 = API itself has a problem and can't fulfill the request at this time
         }

@@ -1,39 +1,44 @@
 <template>
-  <div id="login">
-    <div class="login-poster">
-      <h1>Trading Simulator</h1>
-      <p>Trade Smart, Risk-Free, Master the Market with Our Simulator!</p>
-    </div>
+  <div class="login-container">
+    <div class="login-card glass-panel">
+      <div class="brand-header">
+        <h1 class="title-primary">Trading Simulator</h1>
+        <p class="subtitle">Master the Market. Risk-Free. Trade Smarter.</p>
+      </div>
 
-    <div class="login-form">
-      <h2>Hello Again!</h2>
-      <h3>Welcome Back</h3>
-      <form v-on:submit.prevent="login">
-        <div id="fields">
-          <input
-            type="text"
-            id="username"
-            placeholder="Username"
-            v-model="user.username"
-            required
-            autofocus
-            autocomplete="off"
-          />
-          <input
-            type="password"
-            id="password"
-            placeholder="Password"
-            v-model="user.password"
-            required
-          />
-          <div><button type="submit">Login</button></div>
+      <div class="form-section">
+        <h2 class="form-title">Welcome Back</h2>
+        <h3 class="form-subtitle">Sign in to Continue</h3>
+
+        <form @submit.prevent="login">
+          <div class="input-group">
+            <input
+              type="text"
+              placeholder="Username"
+              v-model="user.username"
+              required
+              autocomplete="off"
+              class="custom-input"
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              v-model="user.password"
+              required
+              class="custom-input"
+            />
+
+            <button type="submit" class="btn-primary">Login</button>
+          </div>
+        </form>
+
+        <div class="register-here">
+          Need an account?
+          <router-link :to="{ name: 'register' }" class="link">
+            Register Here
+          </router-link>
         </div>
-      </form>
-      <div class="register-here">
-        Need an account?
-        <router-link v-bind:to="{ name: 'register' }"
-          >Register Here! {{ profile.id }}</router-link
-        >
       </div>
     </div>
   </div>
@@ -52,40 +57,38 @@ export default {
         password: "",
       },
       profile: {
-        id:""
+        id: "",
       },
       account: {
-        id:""
+        id: "",
       },
     };
   },
-  methods: {
-    getAccountProfile(){
 
+  methods: {
+    getAccountProfile() {
       const fetchAccount = accountService.getAccount();
       const fetchProfile = profileService.getCurrentProfile();
 
-      Promise.all([fetchAccount, fetchProfile]).then(([response1, response2])=>{
-        this.account.id = response1.data.id;
-        this.profile.id = response2.data.id;
-
-        console.log(this.account.id, this.profile.id);
-      }).catch((error)=>{
-        console.error("An error occurred: ", error);
-      }).finally(() => {
+      Promise.all([fetchAccount, fetchProfile])
+        .then(([response1, response2]) => {
+          this.account.id = response1.data.id;
+          this.profile.id = response2.data.id;
+        })
+        .catch((error) => {
+          console.error("An error occurred: ", error);
+        })
+        .finally(() => {
           if (!this.account.id && !this.profile.id) {
             this.$router.push({ name: "create-profile" });
-          } else if (
-            !this.account.id &&
-            this.profile.id
-          ) {
+          } else if (!this.account.id && this.profile.id) {
             this.$router.push({ name: "create-account" });
           } else {
             this.$router.push({ name: "home" });
           }
         });
-
     },
+
     login() {
       authService
         .login(this.user)
@@ -113,127 +116,142 @@ export default {
 </script>
 
 <style scoped>
-#login {
+.login-container {
+  min-height: calc(100vh - 100px);
   display: flex;
-  align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  align-items: center;
+  padding: 24px;
+}
+
+.login-card {
   width: 100%;
-}
-#username {
-  border: 1px solid #eeeeee;
-  border-radius: 30px;
-  width: 30vw;
-  height: 5vh;
-  padding: 15px;
-  margin-bottom: 10px;
-  outline: none;
-}
-#password {
-  border: 1px solid #eeeeee;
-  border-radius: 30px;
-  width: 30vw;
-  height: 5vh;
-  padding: 15px;
-  margin-bottom: 20px;
-  outline: none;
-}
-
-button {
-  border: none;
-  border-radius: 30px;
-  width: 30vw;
-  height: 5vh;
-  background-color: #0575e6;
-  color: white;
-  margin-bottom: 40px;
-  font-size: 18px;
-}
-button:hover {
-  background-color: #105ca9;
-  cursor: pointer;
-}
-
-#fields {
+  max-width: 440px;
+  padding: 48px 40px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 32px;
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-h2 {
-  font-weight: bold;
-  font-size: 45px;
-  padding-bottom: 10px;
-}
-
-h3 {
-  font-size: 20px;
-  font-weight: 500;
-  padding-bottom: 30px;
-}
-
-.login-form {
-  background-color: white;
-  border-top-right-radius: 10px;
-  border-bottom-right-radius: 10px;
-  height: 80vh;
-  width: 50%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 50px;
-}
-
-h1 {
-  font-size: 55px;
-  color: white;
-  font-weight: bold;
-}
-
-p {
-  color: white;
+.brand-header {
   text-align: center;
-  width: 329px;
 }
 
-.login-poster {
-  background-image: linear-gradient(#0575e6, #02298a, #021b79);
-  border-top-left-radius: 10px;
-  border-bottom-left-radius: 10px;
-  height: 80vh;
+.title-primary {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--accent-primary);
+  margin: 8px 0 0 0;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-section {
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
-  width: 700px;
 }
 
-@media screen and (max-width: 925px) {
-  h2 {
-    font-size: 30px;
-  }
+.form-title {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  text-align: center;
+  margin: 0 0 4px 0;
+  font-weight: 600;
 }
 
-@media screen and (max-width: 876px) {
-  h1 {
-    font-size: 40px;
-  }
+.form-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0 0 24px 0;
+  font-weight: 400;
 }
-@media screen and (max-width: 876px) {
-  h1 {
-    font-size: 35px;
-  }
-}
-@media screen and (max-width: 643px) {
-  .login-poster {
-    display: none;
-  }
 
-  .login-form {
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-    width: 95vw;
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.custom-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  outline: none;
+  font-size: 1rem;
+  transition: var(--transition-smooth);
+}
+
+.custom-input::placeholder {
+  color: var(--text-muted);
+}
+
+.custom-input:focus {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.btn-primary {
+  margin-top: 8px;
+  width: 100%;
+  padding: 14px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--accent-primary);
+  color: #fff;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  background: #2563eb;
+  box-shadow: var(--shadow-glow);
+}
+
+.register-here {
+  text-align: center;
+  margin-top: 24px;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.link {
+  color: var(--accent-primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition-smooth);
+  margin-left: 4px;
+}
+
+.link:hover {
+  text-decoration: underline;
+  text-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>

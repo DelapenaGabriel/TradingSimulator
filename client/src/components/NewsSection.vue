@@ -1,39 +1,49 @@
 <template>
-  <div class="container">
+  <div class="news-wrapper">
+    <!-- Headline -->
     <div class="headline">
-      <h1>MARKET NEWS</h1>
+      <h1 class="title-primary">Market News</h1>
     </div>
-    <div class="search-news">
-      <button>Search Key</button>
-      <input type="text" placeholder="Search for news" v-model="searchInput" />
+
+    <!-- Search -->
+    <div class="search-section">
+      <div class="search-input-wrapper">
+        <i class="bx bx-search search-icon"></i>
+        <input
+          type="text"
+          placeholder="Search for news..."
+          v-model="searchInput"
+          class="search-input"
+        />
+      </div>
     </div>
-    <div class="news-card-container" v-if="!isLoading">
-      <div class="news-card" v-for="card in filteredList" :key="card.id">
-        <div class="image">
-          <img :src="card.image" />
+
+    <!-- News Cards -->
+    <div class="news-list" v-if="!isLoading">
+      <div
+        class="news-card glass-panel"
+        v-for="card in filteredList"
+        :key="card.id"
+      >
+        <div class="news-image-container">
+          <img :src="card.image || defaultImage" class="news-image" />
         </div>
-        <div class="card-info">
-          <div class="source-date">
-            <div class="source">
-              <p>{{ card.source }}</p>
-            </div>
-            <div class="date">
-              <p>{{unixToDate(card.datetime)}}</p>
-            </div>
+        <div class="news-content">
+          <div class="news-meta">
+            <span class="news-source">{{ card.source }}</span>
+            <span class="news-date">{{ formatDate(card.datetime) }}</span>
           </div>
-          <div class="card-headline">
-            <h2>{{ card.headline }}</h2>
-          </div>
-          <div class="description">
-            <p>{{ card.summary }}</p>
-          </div>
-          <div class="button">
-            <button><a :href="card.url" target="_blank">Read More</a></button>
-          </div>
+          <h2 class="news-headline">{{ card.headline }}</h2>
+          <p class="news-summary">{{ card.summary }}</p>
+          <a :href="card.url" target="_blank" class="read-more-btn">
+            Read More <i class="bx bx-right-arrow-alt"></i>
+          </a>
         </div>
       </div>
     </div>
-    <div class="loading" v-else>
+
+    <!-- Loading -->
+    <div class="loading-state" v-else>
       <loading-spinner id="spinner" :spin="isLoading" />
     </div>
   </div>
@@ -42,12 +52,16 @@
 <script>
 import newsService from "../services/NewsService";
 import LoadingSpinner from "./LoadingSpinner.vue";
+
 export default {
+  components: { LoadingSpinner },
   data() {
     return {
       news: [],
       isLoading: false,
       searchInput: "",
+      defaultImage:
+        "https://www.shutterstock.com/image-vector/default-ui-image-placeholder-wireframes-600nw-1037719192.jpg",
     };
   },
   created() {
@@ -59,176 +73,234 @@ export default {
       newsService
         .getNews()
         .then((response) => {
-          if (response.status == 200) {
+          if (response.status === 200) {
             this.news = response.data;
-            this.isLoading = false;
           }
         })
-        .catch((error) => {
-          console.error("Error occurred retrieving news.", error);
+        .catch((err) => console.error("Error fetching news:", err))
+        .finally(() => {
+          this.isLoading = false;
         });
     },
-    unixToDate(time){
-      const date = new Date(time  * 1000);
-      return date;
-    }
-  },
-  components: {
-    LoadingSpinner,
+    formatDate(unixTime) {
+      const date = new Date(unixTime * 1000);
+      return date.toLocaleString(); // e.g., "12/11/2025, 2:30 PM"
+    },
   },
   computed: {
     filteredList() {
-      let list = this.news;
-      if (this.searchInput != "") {
-        list = list.filter((news) => {
-          return (
-            news.headline.toLowerCase().includes(this.searchInput.toLowerCase()) ||
-            news.source.toLowerCase().includes(this.searchInput.toLowerCase()) ||
-            news.datetime == this.searchInput ||
-            news.summary.toLowerCase().includes(this.searchInput.toLowerCase())
-          );
-        });
-      }
-      return list;
+      if (!this.searchInput) return this.news;
+      return this.news.filter(
+        (n) =>
+          n.headline.toLowerCase().includes(this.searchInput.toLowerCase()) ||
+          n.source.toLowerCase().includes(this.searchInput.toLowerCase()) ||
+          n.summary.toLowerCase().includes(this.searchInput.toLowerCase()),
+      );
     },
   },
 };
 </script>
 
 <style scoped>
-.container {
-  min-height: 100vh;
-  width: 90%;
-  margin: 10px auto;
+.news-wrapper {
+  padding: 40px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 80vh;
   display: flex;
   flex-direction: column;
-  padding: 50px;
+  gap: 32px;
 }
+
 .headline {
+  text-align: center;
   margin-bottom: 10px;
 }
-h1 {
-  font-size: 38px;
-  text-align: center;
-  border-bottom: 3px solid #bbbbbb;
-  padding-bottom: 10px;
+
+.title-primary {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.02em;
 }
-.search-news {
+
+/* Search Box */
+.search-section {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 35px;
+  justify-content: center;
+  gap: 12px;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
   align-items: center;
 }
 
-.search-news input {
+.search-icon {
+  position: absolute;
+  left: 16px;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
+
+.search-input {
   width: 100%;
-  flex: 1;
-  border-radius: 0 5px 5px 0;
-  padding: 2px;
-  text-align: center;
-  border: 1px solid rgb(205, 205, 205);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 14px 16px 14px 44px;
+  color: var(--text-primary);
+  font-size: 1rem;
   outline: none;
+  transition: var(--transition-smooth);
 }
-.search-news button {
-  background-color: black;
-  padding: 2px;
-  max-width: 180px;
-  color: white;
-  border-radius: 5px 0 0 5px;
+
+.search-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-primary {
+  background: var(--accent-primary);
+  color: #fff;
   border: none;
+  border-radius: var(--radius-md);
+  padding: 0 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
 }
 
+.btn-primary:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
 
-.news-card-container {
+/* News List */
+.news-list {
   display: flex;
   flex-direction: column;
+  gap: 24px;
 }
 
+/* Card */
 .news-card {
   display: flex;
-  gap: 30px;
-  margin-bottom: 50px;
-  border: 1px solid #bbbbbb;
-  border-radius: 10px;
-  padding: 20px;
+  padding: 0;
   overflow: hidden;
+  transition: var(--transition-smooth);
+  border: 1px solid var(--border-glass);
 }
 
 .news-card:hover {
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-glow);
 }
 
-.image {
-  width: 30%;
+.news-image-container {
+  width: 320px;
+  flex-shrink: 0;
 }
-.image img {
-  max-width: 100%;
+
+.news-image {
+  width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 10px;
 }
 
-.card-info {
-  width: 90%;
+.news-content {
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  gap: 12px;
+  flex: 1;
 }
 
-.source-date {
+.news-meta {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
-.source-date p {
-  color: #898989;
-  font-weight: 400;
+.news-source {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.source {
-  border-right: 1px solid rgb(205, 205, 205);
+.news-date {
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
-.source p {
-  margin-right: 10px;
+.news-headline {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  line-height: 1.4;
 }
 
-h2 {
-  font-size: 20px;
+.news-summary {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-button {
-  background-color: black;
-  padding: 5px 20px;
-  border-radius: 10px;
-  border: none;
-}
-
-button a {
+.read-more-btn {
+  margin-top: auto;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
   text-decoration: none;
-  color: white;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-full);
+  transition: var(--transition-smooth);
 }
 
-.loading {
-  height: 40vh;
+.read-more-btn:hover {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #fff;
+  transform: translateX(4px);
+}
+
+.loading-state {
   display: flex;
   justify-content: center;
-  align-items: center;
+  padding: 60px 0;
 }
 
-@media screen and (max-width: 800px) {
-  .search-news button {
-   
-    overflow: hidden;
-  }
+@media (max-width: 768px) {
   .news-card {
-    display: flex;
     flex-direction: column;
   }
 
-  .image {
+  .news-image-container {
     width: 100%;
+    height: 200px;
   }
 }
 </style>

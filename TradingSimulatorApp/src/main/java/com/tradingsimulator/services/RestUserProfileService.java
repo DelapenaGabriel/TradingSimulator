@@ -16,13 +16,12 @@ import java.util.List;
 public class RestUserProfileService implements UserProfileService{
     private UserProfileDao userProfileDao;
     private UserDao userDao;
-    private CloudinaryService cloudinaryService;
 
 
-    public RestUserProfileService (UserProfileDao userProfileDao, UserDao userDao, CloudinaryService cloudinaryService){
+
+    public RestUserProfileService (UserProfileDao userProfileDao, UserDao userDao){
         this.userProfileDao = userProfileDao;
         this.userDao = userDao;
-        this.cloudinaryService = cloudinaryService;
     }
 
     @Override
@@ -77,18 +76,13 @@ public class RestUserProfileService implements UserProfileService{
     }
 
     @Override
-    public UserProfile create(UserProfile newUserProfile, Principal principal, MultipartFile file) throws IOException {
+    public UserProfile create(UserProfile newUserProfile, Principal principal) {
         UserProfile userProfile = null;
 
         User user = getUser(principal);
 
         if (user != null) {
                 newUserProfile.setUserId(user.getId());
-            // Upload image to cloud if a file is provided
-            if (file != null && !file.isEmpty()) {
-                String imageUrl = cloudinaryService.upload(file);
-                newUserProfile.setAvatarUrl(imageUrl);
-            }
                 userProfile = userProfileDao.createUserProfile(newUserProfile);
         }
         return userProfile;

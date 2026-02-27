@@ -1,48 +1,65 @@
 <template>
-  <div class="overview">
-    <div class="balance-container">
-      <div class="balance-account-number">
-        <h2>Balance</h2>
-        <h3>Account #:{{ account.id }}</h3>
+  <div class="overview-wrapper">
+    <!-- Balance Section -->
+    <div class="balance-section">
+      <div class="balance-header">
+        <h2 class="title-primary">Total Balance</h2>
+        <span class="account-tag">Acct #{{ account.id }}</span>
       </div>
-      <div class="total-balance">
-        <span>$</span
-        ><input
+
+      <div class="balance-input-wrapper">
+        <span class="currency-symbol">$</span>
+        <input
           type="text"
-          id="balance"
+          class="balance-input text-mono"
           @change="updateBalance"
           v-model="editBalance.balance"
+          aria-label="Account Balance"
         />
       </div>
     </div>
-    <div class="market-container">
-      <div class="market-headline">
-        <h2>MARKET SNAPSHOT</h2>
+
+    <!-- Market Snapshot Section -->
+    <div class="market-section">
+      <div class="section-header">
+        <h3 class="title-secondary">Market Snapshot</h3>
+        <span class="live-indicator">LIVE</span>
       </div>
-      <div class="market-cards-container" v-if="!isloading">
-        <div class="cards" v-for="stock in fetchStockCards" :key="stock.symbol" @click="routeToStockOverview(stock.symbol)">
-          <div class="symbol">
-            <div class="logo-symbol">
-              <img :src="stock.logo" />
-              <p>{{ stock.symbol }}</p>
-            </div>
+
+      <div class="market-grid" v-if="!isloading">
+        <div
+          class="market-card glass-panel"
+          v-for="stock in fetchStockCards"
+          :key="stock.symbol"
+          @click="routeToStockOverview(stock.symbol)"
+        >
+          <div class="card-header">
+            <img :src="stock.logo" class="company-logo" :alt="stock.symbol" />
+            <span class="stock-symbol">{{ stock.symbol }}</span>
           </div>
-          <div class="price-change">
-            <p class="price">${{ stock.price }}</p>
-            <p
-              class="change"
-              :style="{ color: stock.percentChange < 0 ? '#DC2027' : 'green' }"
+          <div class="card-body">
+            <div class="price text-mono">${{ stock.price }}</div>
+            <div
+              class="change-badge text-mono"
+              :class="stock.percentChange >= 0 ? 'bg-up' : 'bg-down'"
             >
+              <i
+                :class="
+                  stock.percentChange >= 0
+                    ? 'bx bx-trending-up'
+                    : 'bx bx-trending-down'
+                "
+              ></i>
               {{
                 stock.percentChange > 0
                   ? "+" + stock.percentChange
                   : stock.percentChange
               }}%
-            </p>
+            </div>
           </div>
         </div>
       </div>
-      <div v-else class="loading">
+      <div v-else class="loading-state">
         <loading-spinner id="spinner" v-bind:spin="isloading" />
       </div>
     </div>
@@ -50,187 +67,209 @@
 </template>
 
 <style scoped>
-.overview {
-  background-color: #031224;
-  display: flex;
-  height: 100%;
-  padding: 10px;
-  gap: 20px;
-}
-.balance-container {
-  display: flex;
-  gap: 20px;
-  width: 100%;
-  max-width: 600px;
-}
-.balance-account-number {
-  height: 100%;
+.overview-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  gap: 32px;
+  height: 100%;
 }
-h2 {
-  text-transform: uppercase;
-  font-size: 30px;
-  color: #e0e0e0;
+
+/* Balance Section */
+.balance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.balance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title-primary {
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
   margin: 0;
 }
-h3 {
-  color: #e0e0e0;
-  font-size: 15px;
-  font-weight: 200;
+
+.account-tag {
+  font-size: 0.85rem;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
 }
 
-.total-balance {
+.balance-input-wrapper {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
 }
-.total-balance span {
-  color: #e0e0e0;
-  font-size: 41px;
+
+.currency-symbol {
+  font-size: 2.5rem;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
-input#balance {
-  background-color: #031224;
-  color: #e0e0e0;
-  font-weight: 500;
-  font-size: 35px;
+.balance-input {
+  background: transparent;
   border: none;
   outline: none;
-  text-align: start;
-  margin: 0;
-  width: 90%;
-}
-
-.market-container {
+  font-size: 3rem;
+  font-weight: 600;
+  color: var(--text-primary);
   width: 100%;
-  display: flex;
-  flex-direction: column;
+  padding: 0;
 }
 
-.market-headline {
-  margin-bottom: 10px;
-  display: flex;
-}
-.market-headline h2 {
-  margin-right: 10px;
-}
-.loading {
-  color: #e0e0e0;
-  display: flex;
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-}
-.logo-symbol img {
-  width: 30px;
-  height: 30px;
-  border-radius: 50px;
-  overflow: hidden;
-  object-fit: cover;
-}
-.market-cards-container {
-  color: #e0e0e0;
-  display: flex;
-  align-items: center;
-  gap: 50px;
-}
-.cards {
-  border: 3px solid white;
-  background-color: #2e3d50;
-  width: 30%;
-  border-radius: 13px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 5px;
+.balance-input:focus {
+  color: var(--accent-primary);
 }
 
-.cards:hover{
+/* Market Section */
+.market-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title-secondary {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.live-indicator {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-up);
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(0, 230, 118, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: pulse 2s infinite;
+}
+
+.live-indicator::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--accent-up);
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Market Cards Grid */
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.market-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   cursor: pointer;
+  border: 1px solid var(--border-glass);
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  transition: var(--transition-smooth);
 }
-.symbol {
-  width: 100%;
+
+.market-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-glow);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.company-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 2px;
+}
+
+.stock-symbol {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.card-body {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 8px;
 }
-.logo-symbol {
-  width: 100%;
-  display: flex;
-  flex: 100%;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  margin-bottom: 50px;
-}
-.logo-symbol p {
-  font-size: 38px;
-  font-weight: 500;
-  margin: 0;
-}
+
 .price {
-  font-size: 25px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
-.price-change {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.change-badge {
+  display: inline-flex;
   align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  width: fit-content;
+  color: #fff;
 }
 
-@media screen and (max-width: 1200px) {
-  .logo-symbol p {
-    font-size: 30px;
-  }
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
 }
 
-@media screen and (max-width: 1200px) {
-  .logo-symbol p {
-    font-size: 25px;
-  }
-}
-
-@media screen and (max-width: 875px) {
-  .overview {
+@media (max-width: 768px) {
+  .balance-header {
     flex-direction: column;
-    gap: 40px;
+    align-items: flex-start;
+    gap: 8px;
   }
-
-  .balance-container {
-    width: 100%;
-  }
-
-  h2 {
-    font-size: 25px;
-  }
-
-  .balance-account-number {
-    width: 50%;
-  }
-}
-
-@media screen and (max-width: 580px) {
-  .logo-symbol p {
-    font-size: 30px;
-  }
-}
-
-@media screen and (max-width: 510px) {
-  .logo-symbol p {
-    font-size: 25px;
-  }
-  .price {
-    font-size: 20px;
-  }
-
-  .market-cards-container {
-    gap: 20px;
+  .balance-input {
+    font-size: 2.5rem;
   }
 }
 </style>
@@ -244,12 +283,12 @@ export default {
     this.getAccount();
     this.getSnapshotStocks();
   },
-  computed:{
-    fetchStockCards(){
+  computed: {
+    fetchStockCards() {
       this.getSnapshotStocks;
       const cards = this.stockCards;
-      return cards
-    }
+      return cards;
+    },
   },
   data() {
     return {
@@ -257,7 +296,7 @@ export default {
       stockCards: [],
       symbols: ["AAPL", "TSLA", "NVDA"],
       isloading: true,
-      toggleSymbols:false,
+      toggleSymbols: false,
 
       editBalance: {
         balance: "",
@@ -266,33 +305,36 @@ export default {
   },
   methods: {
     getAccount() {
-      accountService.getAccount().then((response) => {
-        if (response.status == 200) {
-          this.account = response.data;
-          this.editBalance.balance = response.data.balance;
-        }
-      }).catch(error =>{
-        console.error("There was an error retrieving account.", error);
-      });
+      accountService
+        .getAccount()
+        .then((response) => {
+          if (response.status == 200) {
+            this.account = response.data;
+            this.editBalance.balance = response.data.balance;
+          }
+        })
+        .catch((error) => {
+          console.error("There was an error retrieving account.", error);
+        });
     },
     getSnapshotStocks() {
-
-    this.isloading = true;
-    const promises = this.symbols.map((symbol)=>{
+      this.isloading = true;
+      const promises = this.symbols.map((symbol) => {
         return stockService.getStock(symbol);
-    });
-   
-    Promise.all(promises).then((responses)=>{
-        this.stockCards = responses.map(response=>{
+      });
+
+      Promise.all(promises)
+        .then((responses) => {
+          this.stockCards = responses.map((response) => {
             return response.data;
-        })
-    }).catch((error) => {
-            console.error("Error fetching stocks", error);
-          })
-          .finally(() => {
-            this.isloading = false;
           });
-          
+        })
+        .catch((error) => {
+          console.error("Error fetching stocks", error);
+        })
+        .finally(() => {
+          this.isloading = false;
+        });
     },
     updateBalance() {
       accountService
@@ -302,9 +344,9 @@ export default {
           console.log("Error updating balance", error);
         });
     },
-    routeToStockOverview(symbol){
-          this.$router.push({name:"stock-overview", params: {id: symbol}})
-        }
+    routeToStockOverview(symbol) {
+      this.$router.push({ name: "stock-overview", params: { id: symbol } });
+    },
   },
   components: {
     LoadingSpinner,

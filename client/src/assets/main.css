@@ -1,14 +1,149 @@
 @import "./base.css";
 
-/* Add global project styles here */
+/* Core Design System Variables */
+:root {
+  /* Colors */
+  --bg-app: #0a0a0f;
+  --bg-surface: rgba(20, 20, 30, 0.4);
+  --bg-surface-hover: rgba(30, 30, 45, 0.6);
+
+  --text-primary: #f8f9fa;
+  --text-secondary: #a0aab2;
+  --text-muted: #626c7a;
+
+  --accent-up: #00e676; /* Neon Mint */
+  --accent-down: #ff3b3b; /* Crimson */
+  --accent-primary: #3b82f6; /* Electric Blue */
+
+  --border-glass: rgba(255, 255, 255, 0.08);
+
+  /* Shadows */
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+  /* Typography */
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "Roboto Mono", monospace;
+
+  /* Spacing & Radii */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
 
 * {
-  font-size: 16px;
-  font-family: "Poppins", Tahoma, Geneva, Verdana, sans-serif;
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 body {
-  background: linear-gradient(to top, #c4c5c7 0%, #dcdddf 52%, #ebebeb 100%);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  /* Background gradient for extra depth */
+  background-image:
+    radial-gradient(
+      circle at 15% 50%,
+      rgba(59, 130, 246, 0.05),
+      transparent 25%
+    ),
+    radial-gradient(circle at 85% 30%, rgba(0, 230, 118, 0.05), transparent 25%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Glassmorphism Utility */
+.glass-panel {
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-glass);
+  transition: var(--transition-smooth);
+}
+
+.glass-panel:hover {
+  background: var(--bg-surface-hover);
+}
+
+/* Base Styles */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+p,
+span,
+div {
+  color: var(--text-secondary);
+}
+
+strong,
+b {
+  color: var(--text-primary);
+}
+
+/* Monospace text for numbers */
+.text-mono {
+  font-family: var(--font-mono);
+}
+
+/* Status colors */
+.color-up {
+  color: var(--accent-up) !important;
+}
+
+.color-down {
+  color: var(--accent-down) !important;
+}
+
+.bg-up {
+  background-color: var(--accent-up);
+}
+
+.bg-down {
+  background-color: var(--accent-down);
+}
+
+/* Custom Webkit Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Bento Grid Utilities */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .bento-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+  .bento-grid > * {
+    grid-column: span 1 !important;
+  }
 }

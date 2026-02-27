@@ -1,23 +1,35 @@
 <template>
-  <nav class="nav-container">
-    <div class="logo">
-      <router-link :to="{ name: 'home' }"><img src="../assets/logo.png" /></router-link>
-    </div>
+  <nav class="nav-wrapper">
+    <div class="nav-container glass-panel">
+      <div class="logo">
+        <router-link :to="{ name: 'home' }"
+          ><img src="../assets/logo.png" alt="Logo"
+        /></router-link>
+      </div>
 
-    <div class="nav-links">
-      <ul>
-        <li><router-link :to="{ name: 'home' }">Dashboard</router-link></li>
-        <li><router-link :to="{ name: 'trade' }">Trade</router-link></li>
-        <li><router-link :to="{ name: 'stocks' }">Stocks</router-link></li>
-        <li><router-link :to="{ name: 'news' }">News</router-link></li>
-        <li>
-          <img :src="profile.avatarUrl? profile.avatarUrl : `../assets/default_avatar.jpg`" @mouseover="showMenu" @click="hideMenu" />
-          <div class="menu" v-if="isMenuVisible">
-            <router-link :to="{ name: 'edit-profile' }">Edit Profile</router-link>
-            <router-link :to="{ name: 'logout' }">Logout</router-link>
-          </div>
-        </li>
-      </ul>
+      <div class="nav-links">
+        <ul>
+          <li><router-link :to="{ name: 'home' }">Dashboard</router-link></li>
+          <li><router-link :to="{ name: 'trade' }">Trade</router-link></li>
+          <li><router-link :to="{ name: 'stocks' }">Stocks</router-link></li>
+          <li><router-link :to="{ name: 'news' }">News</router-link></li>
+        </ul>
+      </div>
+
+      <div class="nav-profile" @mouseover="showMenu" @mouseleave="hideMenu">
+        <img
+          :src="
+            profile.avatarUrl
+              ? profile.avatarUrl
+              : `../assets/default_avatar.jpg`
+          "
+          class="avatar"
+        />
+        <div class="menu glass-panel" v-if="isMenuVisible">
+          <router-link :to="{ name: 'edit-profile' }">Edit Profile</router-link>
+          <router-link :to="{ name: 'logout' }">Logout</router-link>
+        </div>
+      </div>
     </div>
   </nav>
 </template>
@@ -37,13 +49,16 @@ export default {
   },
   methods: {
     getProfile() {
-      profileService.getCurrentProfile().then((response) => {
-        if (response.status == 200) {
-          this.profile = response.data;
-        }
-      }).catch(error =>{
-        console.error("Error Occurred retrieving profile.", error)
-      });
+      profileService
+        .getCurrentProfile()
+        .then((response) => {
+          if (response.status == 200) {
+            this.profile = response.data;
+          }
+        })
+        .catch((error) => {
+          console.error("Error Occurred retrieving profile.", error);
+        });
     },
     showMenu() {
       this.isMenuVisible = true;
@@ -56,157 +71,136 @@ export default {
 </script>
 
 <style scoped>
+.nav-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 24px 24px 0 24px;
+  position: relative;
+  z-index: 1000;
+}
+
 .nav-container {
-  background-color: #031224;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  height: 125px;
+  width: 100%;
+  max-width: 1200px;
+  padding: 8px 24px;
+  border-radius: 50px; /* Pill shape */
+}
+
+/* Adjust logo size to fit pill */
+.logo {
+  display: flex;
+  align-items: center;
 }
 
 .logo img {
-  width: 125px;
-  height: 125px;
+  height: 48px;
+  width: auto;
+  object-fit: contain;
 }
 
-.logo a {
+/* Links */
+.nav-links ul {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: var(--transition-smooth);
+}
+
+.nav-links a:hover,
+.nav-links a.router-link-exact-active {
+  color: var(--text-primary);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+/* Profile */
+.nav-profile {
+  position: relative;
   display: flex;
   align-items: center;
+  cursor: pointer;
+}
+
+/* Invisible bridge to keep hover active when moving to dropdown */
+.nav-profile::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 20px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid transparent;
+  transition: var(--transition-smooth);
+}
+
+.nav-profile:hover .avatar {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+/* Dropdown Menu */
+.menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .menu a {
-  font-weight: 400;
-  color: black;
-  display: block;
+  padding: 10px 16px;
+  color: var(--text-secondary);
   text-decoration: none;
-  text-align: center;
-  padding: 10px;
+  border-radius: 6px;
+  transition: var(--transition-smooth);
+  font-size: 0.9rem;
 }
 
 .menu a:hover {
-  border-radius: 5px;
-  background-color: #f0f0f0;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
 }
 
-.menu {
-  display: block;
-  position: relative;
-  top: 70px;
-  background-color: #ffffff;
-  width: 120px;
-  border-radius: 5px;
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
-  z-index: 9999;
-}
-
-h1 {
-  color: #e0e0e0;
-  font-size: 25px;
-  font-weight: 500;
-}
-.logo a {
-  text-decoration: none;
-  color: #e0e0e0;
-}
-
-ul li {
-  list-style: none;
-  margin-left: 60px;
-}
-
-ul li a:hover {
-  color: #2196f3;
-  transition: all 0.3 ease;
-}
-
-ul li a {
-  font-weight: 300;
-  color: #e0e0e0;
-  text-decoration: none;
-}
-
-.router-link-exact-active {
-  color: #2196f3;
-}
-
-ul {
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-}
-
-ul li:last-child{
-  margin-left: 110px;
-}
-
-li img {
-  width: 50px;
-  height: 50px;
-  border: 2px solid white;
-  border-radius: 50px;
-  object-fit: cover;
-  overflow: hidden;
-  position: absolute;
-  right:30px;
-  top:36px;
-}
-
-@media screen and (max-width:780px){
-  .nav-container{
+/* Responsive */
+@media (max-width: 768px) {
+  .nav-wrapper {
+    padding: 16px;
+  }
+  .nav-container {
     flex-direction: column;
+    border-radius: var(--radius-md);
+    padding: 16px;
+    gap: 16px;
+  }
+  .nav-links ul {
+    gap: 16px;
+    flex-wrap: wrap;
     justify-content: center;
-    height:230px;
   }
-
-  .logo img{
-    width: 150px;
-    height: auto;
+  .nav-profile {
+    align-self: center;
   }
-
-  li img{
-    top:163px;
-  }
-
-  .menu{
-    position: absolute;
-    right:65px;
-    top:205px;
-  }
-}
-@media screen and (max-width:600px) {
-  li img{
-    right:40px;
-    top:163px;
-  }
-  ul li{
-    margin-left: 35px;
-  }
-  ul{
-    justify-content: flex-start;
-  }
-}
-
-@media screen and (max-width:499px){
-
-  li img{
-    width: 40px;
-    height:40px;
-    right:30px;
-    top:167px;
-  }
-  ul li{
-    margin-left: 20px;
-  }
-}
-
-@media screen and (max-width:400px){
-
-  ul{
-    padding-left: 10px;
-  }
-ul li{
-  margin-left: 10px;
-}
 }
 </style>

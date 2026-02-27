@@ -14,7 +14,7 @@ public interface UserProfileService {
 
     UserProfile update(UserProfile userProfile, Principal principal);
 
-    UserProfile create(UserProfile newUserProfile, Principal principal, MultipartFile file) throws IOException;
+    UserProfile create(UserProfile newUserProfile, Principal principal);
 
     int delete(int id, Principal principal);
 }

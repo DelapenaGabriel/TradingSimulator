@@ -36,8 +36,24 @@ export default {
 </script>
 
 <style scoped>
+@keyframes custom-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .load-spinner {
   transition-property: opacity;
   transition-duration: 400ms;
+  animation: custom-spin 1s linear infinite;
+  display: inline-block;
+  font-size: 2rem;
+  color: var(
+    --accent-primary,
+    #3b82f6
+  ); /* Use primary accent color with fallback */
 }
 </style>

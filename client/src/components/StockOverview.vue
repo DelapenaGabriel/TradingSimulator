@@ -1,66 +1,110 @@
 <template>
-  <div class="container">
-    <div class="stock-card" v-if="!isLoading">
-      <div class="headline">
-        <img
-          :src="
-            stock.logo
-              ? stock.logo
-              : 'https://www.shutterstock.com/image-vector/default-ui-image-placeholder-wireframes-600nw-1037719192.jpg'
-          "
-        />
-        <div class="symbol-info">
-          <h1>{{ stock.symbol }}</h1>
-          <h2>{{ stock.name }}</h2>
+  <div class="overview-wrapper">
+    <div class="back-link">
+      <router-link :to="{ name: 'stocks' }" class="nav-back">
+        <i class="bx bx-left-arrow-alt"></i> Back to Explorer
+      </router-link>
+    </div>
+
+    <div
+      class="stock-overview-card glass-panel"
+      v-if="!isLoading && stock.symbol"
+    >
+      <!-- Header -->
+      <div class="card-header">
+        <div class="header-main">
+          <img
+            :src="
+              stock.logo
+                ? stock.logo
+                : 'https://www.shutterstock.com/image-vector/default-ui-image-placeholder-wireframes-600nw-1037719192.jpg'
+            "
+            class="company-logo"
+            :alt="stock.symbol"
+          />
+          <div class="symbol-info">
+            <h1 class="symbol">{{ stock.symbol }}</h1>
+            <h2 class="company-name">{{ stock.name }}</h2>
+          </div>
         </div>
-      </div>
-      <div class="description">
-        <p class="label">Description</p>
-          <p class="detail" v-if="stockDescription">{{ stockDescription }}</p>
-          <p class="detail" v-else>No Current Description</p>
-      </div>
-      <div class="info">
-        <div class="company-details">
-          <p class="label">Website</p>
-          <a :href="stock.url" target="_blank" class="detail">{{
-            stock.url
-          }}</a>
-          <p class="label">Country</p>
-          <p class="detail">{{ stock.country }}</p>
-          <p class="label">Exchange</p>
-          <p class="detail">{{ stock.exchange }}</p>
-          <p class="label">IPO Date</p>
-          <p>{{ stock.ipo }}</p>
-        </div>
-        <div class="left-price">
-          <p class="label">Price</p>
-          <p class="detail">${{ stock.price }}</p>
-          <p class="label">Change</p>
-          <p class="detail" :style="{ color: stock.percentChange < 0 ? '#DC2027' : 'green' }">
+        <div class="current-price-badge">
+          <span class="price-val text-mono">${{ stock.price }}</span>
+          <div
+            class="change-badge text-mono"
+            :class="stock.percentChange >= 0 ? 'bg-up' : 'bg-down'"
+          >
+            <i
+              :class="
+                stock.percentChange >= 0
+                  ? 'bx bx-trending-up'
+                  : 'bx bx-trending-down'
+              "
+            ></i>
             {{
               stock.percentChange > 0
                 ? "+" + stock.percentChange
                 : stock.percentChange
             }}%
-          </p>
-          <p class="label">Open</p>
-          <p class="detail">${{ stock.openPrice }}</p>
+          </div>
         </div>
-        <div class="right-price">
-          <p class="label">Low</p>
-          <p class="detail">${{ stock.lowPrice }}</p>
-          <p class="label">High</p>
-          <p class="detail">${{ stock.highPrice }}</p>
-          <p class="label">Close</p>
-          <p class="detail">${{ stock.previousClose }}</p>
+      </div>
+
+      <!-- Description -->
+      <div class="description-section">
+        <h3 class="section-title">About</h3>
+        <p class="description-text">
+          {{ stockDescription || "No company description available." }}
+        </p>
+      </div>
+
+      <!-- Data Details Grid -->
+      <div class="details-grid">
+        <div class="detail-group">
+          <h3 class="section-title">Company Info</h3>
+          <div class="info-row">
+            <span class="label">Website</span>
+            <a :href="stock.url" target="_blank" class="value link">{{
+              stock.url || "N/A"
+            }}</a>
+          </div>
+          <div class="info-row">
+            <span class="label">Country</span>
+            <span class="value">{{ stock.country || "N/A" }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Exchange</span>
+            <span class="value">{{ stock.exchange || "N/A" }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">IPO Date</span>
+            <span class="value text-mono">{{ stock.ipo || "N/A" }}</span>
+          </div>
+        </div>
+
+        <div class="detail-group">
+          <h3 class="section-title">Market Data</h3>
+          <div class="info-row">
+            <span class="label">Open</span>
+            <span class="value text-mono">${{ stock.openPrice || 0 }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Prev Close</span>
+            <span class="value text-mono">${{ stock.previousClose || 0 }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Day High</span>
+            <span class="value text-mono">${{ stock.highPrice || 0 }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Day Low</span>
+            <span class="value text-mono">${{ stock.lowPrice || 0 }}</span>
+          </div>
         </div>
       </div>
     </div>
-    <div class="loading" v-if="isLoading">
+
+    <div class="loading-state" v-if="isLoading">
       <loading-spinner id="spinner" :spin="isLoading" />
-    </div>
-    <div class="backout">
-      <router-link :to="{ name: 'stocks' }">Back to stocks</router-link>
     </div>
   </div>
 </template>
@@ -80,21 +124,25 @@ export default {
     this.getStockProfile();
   },
   methods: {
-    getStockProfile(){
+    getStockProfile() {
       this.isLoading = true;
       const stockSymbol = this.$route.params.id;
       const fetchInfo = stockService.getStock(stockSymbol);
       const fetchDescription = stockService.getStockDescription(stockSymbol);
 
-      Promise.all([fetchInfo, fetchDescription]).then(([response1, response2])=>{
-        this.stock = response1.data;
-        this.stockDescription = response2.data.results.description;
-        this.isLoading = false;
-      }).catch((error)=>{
-        console.error("Error Occurred retrieving stock and description.", error);
-      });
-    }
-
+      Promise.all([fetchInfo, fetchDescription])
+        .then(([response1, response2]) => {
+          this.stock = response1.data;
+          this.stockDescription = response2.data.results.description;
+          this.isLoading = false;
+        })
+        .catch((error) => {
+          console.error(
+            "Error Occurred retrieving stock and description.",
+            error,
+          );
+        });
+    },
   },
   components: {
     LoadingSpinner,
@@ -103,125 +151,194 @@ export default {
 </script>
 
 <style scoped>
-.container {
-  background: radial-gradient(
-    circle at 18.7% 37.8%,
-    rgb(250, 250, 250) 0%,
-    rgb(225, 234, 238) 90%
-  );
-  min-height: 100vh;
-  height: 100%;
+.overview-wrapper {
+  padding: 40px 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+  min-height: 80vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: 24px;
+}
+
+.back-link {
+  margin-bottom: 8px;
+}
+
+.nav-back {
+  display: inline-flex;
   align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transition-smooth);
 }
 
-.stock-card {
+.nav-back:hover {
+  color: var(--accent-primary);
+  transform: translateX(-4px);
+}
+
+.stock-overview-card {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  width: 100%;
-  max-width: 646px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  margin-bottom: 20px;
-  margin-top: 20px;
-  overflow-x: hidden;
+  padding: 0;
+  overflow: hidden;
 }
 
-.headline {
-  background-color: #70a1ff;
-  background-image: linear-gradient(315deg, #70a1ff 0%, #c2c0c0 74%);
-  border-radius: 16px 16px 0 0;
+/* Header styling */
+.card-header {
+  padding: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.header-main {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.company-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px;
+}
+
+.symbol-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.symbol {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1;
+}
+
+.company-name {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.current-price-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.price-val {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.change-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Description */
+.description-section {
+  padding: 32px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.section-title {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin: 0 0 16px 0;
+}
+
+.description-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* Grid */
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  padding: 32px;
+}
+
+.detail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 182px;
-  padding: 30px;
-  gap: 90px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
-.headline img {
-  width: 100px;
-  height: 100px;
-  border-radius: 50px;
-  object-fit: cover;
+.label {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
 }
 
-.headline h1 {
-  padding: 0;
-  font-size: 40px;
-  color: white;
-  margin: 0;
-}
-.headline h2 {
-  padding: 0;
-  margin: 0;
-  color: white;
-  font-size: 30px;
+.value {
+  color: var(--text-primary);
   font-weight: 500;
 }
 
-.info {
-  width: 100%;
-  height: 100%;
-  padding: 20px 40px;
-  display: flex;
-  justify-content: space-between;
-  overflow: hidden;
-  gap: 10px;
-}
-.description{
-  padding: 10px 40px;
-  margin-top: 10px;
-}
-.company-details {
-  height: 100%;
-  width: 50%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.company-details a {
-  color: #27a1ed;
+.link {
+  color: var(--accent-primary);
   text-decoration: none;
-  font-size: 16px;
-  margin-bottom: 10px;
-}
-.label {
-  color: #959595;
-  font-size: 18px;
-}
-.detail {
-  color: rgb(53, 52, 52);
-  margin-bottom: 10px;
+  transition: var(--transition-smooth);
 }
 
-.left-price,
-.right-price {
+.link:hover {
+  text-decoration: underline;
+  text-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+}
+
+.loading-state {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
 }
 
-a {
-  color: #27a1ed;
-}
-.loading {
-  margin-bottom: 10px;
-}
-.backout{
-  margin-bottom: 20px;
-}
-@media screen and (max-width: 400px) {
-  .headline {
-    gap: 70px;
+@media (max-width: 768px) {
+  .card-header {
+    flex-direction: column;
+    gap: 24px;
+  }
+  .current-price-badge {
+    align-items: flex-start;
+  }
+  .details-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
